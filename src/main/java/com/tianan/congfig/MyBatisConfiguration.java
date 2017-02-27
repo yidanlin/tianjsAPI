@@ -45,7 +45,7 @@ public class MyBatisConfiguration {
 	@Bean
 	public PaginationInterceptor paginationInterceptor() {
 		PaginationInterceptor page = new PaginationInterceptor();
-		page.setDialectType("mysql");//此处可选择oracle 等
+		page.setDialectType("mysql");//此处可选择oracle、db2 等
 		return page;
 	}
 	/**
