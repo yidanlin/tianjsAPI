@@ -2,22 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.tianan.mapper.UserMapper">
 
-	<select id="getUsers" resultMap="userResult">
-		select * from t_user
-	</select>
+	<!-- 通用查询结果列 -->
+	<sql id="Base_Column_List">
+		test_id AS testId, name, age, test_type AS testType, role, phone
+	</sql>
 
-	<!--配置一个resultMap 指定返回的类型 -->
-	<resultMap id="userResult" type="com.tianan.model.User">
-		<id column="id" property="id" />
-		<result column="name" property="name" />
-		<result column="age" property="age" />
-		<result column="address" property="address" />
-	</resultMap>
-
-	<insert id="insert" parameterType="com.tianan.model.User">
-		 INSERT INTO t_user
- 		(id,name,age,address) 
-		 VALUES 
- 		(#{id},#{name},#{age},#{address}) 
-	</insert>
+	<delete id="deleteAll">
+		DELETE FROM USER
+	</delete>
 </mapper>
