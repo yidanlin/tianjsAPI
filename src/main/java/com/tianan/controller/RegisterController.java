@@ -15,7 +15,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.code.kaptcha.Constants;
 import com.tianan.model.User;
 import com.tianan.restful.HttpSendUtil;
-import com.tianan.service.UserService;
+import com.tianan.service.IUserService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,7 +30,7 @@ public class RegisterController {
 	private String ManagementUser_URL;
 	
 	@Autowired
-	private UserService userService;
+	private IUserService userService;
 	
 	//注册用户，使用POST，传输数据
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
@@ -52,14 +52,9 @@ public class RegisterController {
 			jsonObject.put("info", "验证码错误");
         	return jsonObject;
 		}else{
-			User user = new User();
-			user.setId(3);
-			user.setName("test");
-			user.setAge(23);
-			user.setAddress("test123");
 			//使用userService处理业务
-			String result = userService.insert(user);
-			if(result == null){
+			boolean result = userService.insert(new User(1L, "张三", 17, 1));
+			if(result){
 				String res = "email="+"137763911%40qq.com"+"&password="+"123456"+"&telephone="+"13636597537"+"&imageVerificationCode="+"w2r4"+"&roleType="+"1";
 				String resultRep = null;
 				try {
