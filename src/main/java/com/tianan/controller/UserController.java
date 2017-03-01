@@ -130,6 +130,10 @@ ORDER BY dd, d1,d2*/
 	redisUtil.set("123", key);
 	System.out.println("进入了方法");
 	String string= redisUtil.get("123").toString();
+	Product pro = new Product();
+	List<Product> pros = pro.selectAll();
+	redisUtil.set("pros", pros);
 	return string;
 	}
+	
 }
