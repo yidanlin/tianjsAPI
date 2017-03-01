@@ -2,7 +2,10 @@ package com.tianan.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -11,11 +14,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.enums.SqlLike;
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
-import com.baomidou.mybatisplus.mapper.Wrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.tianan.model.Product;
 import com.tianan.model.User;
 import com.tianan.service.IUserService;
+import com.tianan.util.RedisUtil;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,11 +31,28 @@ import io.swagger.annotations.ApiOperation;
 public class UserController {
 	@Autowired
 	private IUserService userService;
+	
+	@Autowired
+	private RedisUtil redisUtil;
 
-	@RequestMapping(value = "/name/{name}/{sex}", method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/name/{name}/{role}", method = { RequestMethod.GET, RequestMethod.POST })
 	@ApiOperation(value = "姓名模糊查询用户")
-	public List<User> likeName(@PathVariable String name,@PathVariable String sex) {
-		return userService.selectList(new EntityWrapper<User>().eq("name", name).ne("role", sex));
+	public List<User> likeName(@PathVariable String name,@PathVariable String role) {
+		System.out.println(new EntityWrapper<User>().where("name={0}", "'zhangsan'").and("id=1")//{0}是为了取得后面的值不加{0}后面拼接的zhangsan无效
+	            .orNew("status={0}", "0").or("status=1").notLike("nlike", "notvalue") //带New的这一行属于一个整体条件见下面的sql
+	            .andNew("new=xx").like("hhh", "ddd").like("left", "haa", SqlLike.LEFT)
+	            .andNew("pwd=11").isNotNull("n1,n2").isNull("n3")
+	            .groupBy("x1").groupBy("x2,x3")
+	            .having("x1=11").having("x3=433")
+	            .orderBy("dd").orderBy("d1,d2"));
+/*WHERE (name='zhangsan' AND id=1) 
+OR (status='0' OR status=1 AND nlike NOT LIKE '%notvalue%') 
+AND (new=xx AND hhh LIKE '%ddd%' AND left LIKE '%haa') 
+AND (pwd=11 AND n1 IS NOT NULL AND n2 IS NOT NULL AND n3 IS NULL)
+GROUP BY x1, x2,x3
+HAVING (x1=11 AND x3=433)
+ORDER BY dd, d1,d2*/
+		return userService.selectList(new EntityWrapper<User>().where("name={0}",name).and("role={0}",role));
 	}
 
 	@RequestMapping(value = "/{id}", method = { RequestMethod.GET, RequestMethod.POST })
@@ -54,7 +76,7 @@ public class UserController {
 
 	@RequestMapping(value = "", method = { RequestMethod.GET, RequestMethod.POST })
 	@ApiOperation(value = "分页查询用户")
-	public Page<User> getUsers(@RequestParam(defaultValue = "10") int offset, @RequestParam(defaultValue = "1") int limit) {
+	public Page<User> getUsers(@RequestParam(defaultValue = "1") int offset, @RequestParam(defaultValue = "10") int limit) {
 		return userService.selectPage(new Page<User>(offset, limit));
 	}
 	
@@ -90,6 +112,24 @@ public class UserController {
 		System.err.println("查询插入结果：" + user.selectById().toString());
 		user.setName("mybatis-plus-ar");
 		System.err.println("更新：" + user.updateById());
+		Product pro = new Product();
+//		pro.setId(22);
+		pro.setPro_name("AR_test");
+		pro.setPro_code("AR_Test");
+		pro.insert();
+		pro.selectAll();
+		pro.selectPage(new Page<Product>(1,10), new EntityWrapper<Product>().eq("pro_name", "test")).getRecords();
 		return user.selectPage(new Page<User>(0, 12), null);
+	}
+	
+	
+	@RequestMapping(value="/testRedis",method=RequestMethod.POST)
+	@Cacheable(value="test") //指明缓存将被存到什么地方。
+	@ApiOperation(value = "测试Redis")
+	public String getSessionId(@RequestParam ("key" ) String key){
+	redisUtil.set("123", key);
+	System.out.println("进入了方法");
+	String string= redisUtil.get("123").toString();
+	return string;
 	}
 }
