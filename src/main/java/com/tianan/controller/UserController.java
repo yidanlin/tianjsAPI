@@ -136,4 +136,11 @@ ORDER BY dd, d1,d2*/
 	return string;
 	}
 	
+	@RequestMapping(value="/testRedis1",method=RequestMethod.POST)
+	@Cacheable(value="test1") //指明缓存将被存到什么地方。
+	@ApiOperation(value = "测试Redis")
+	public String getSessionId1(@RequestParam ("key" ) String key){
+	String string= redisUtil.get(key).toString();
+	return string;
+	}
 }
